@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docket — Case & Document Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2A41;
+    --paper:#EEECE4;
+    --paper-raised:#F7F5EF;
+    --rule:#C9C2AE;
+    --seal:#7A2E2E;
+    --seal-dim:#a85454;
+    --slate:#5B6470;
+    --green:#3F6B4F;
+    --amber:#8A6A1F;
+    --shadow: 0 1px 0 rgba(27,42,65,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size:15px;
+    line-height:1.5;
+  }
+  .serif{ font-family:"Source Serif 4", Georgia, serif; }
+  .mono{ font-family:"IBM Plex Mono", monospace; }
+
+  #app{
+    display:flex;
+    min-height:100vh;
+  }
+
+  /* ===== Sidebar: folder tabs ===== */
+  .tabs{
+    width:240px;
+    flex-shrink:0;
+    padding:28px 0 28px 18px;
+    border-right:1px solid var(--rule);
+  }
+  .brand{
+    padding:0 18px 22px 6px;
+  }
+  .brand .mark{
+    font-size:12px;
+    letter-spacing:0.12em;
+    color:var(--seal);
+    margin:0 0 2px 0;
+  }
+  .brand h1{
+    margin:0;
+    font-size:22px;
+    font-weight:600;
+  }
+  .tab-list{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .tab{
+    position:relative;
+    padding:10px 14px 10px 18px;
+    border:1px solid var(--rule);
+    border-right:none;
+    border-radius:6px 0 0 6px;
+    background:var(--paper);
+    cursor:pointer;
+    margin-right:-1px;
+  }
+  .tab .cname{
+    display:block;
+    font-weight:600;
+    font-size:14px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .tab .cnum{
+    display:block;
+    font-size:11px;
+    color:var(--slate);
+    margin-top:2px;
+  }
+  .tab.active{
+    background:var(--paper-raised);
+    border-color:var(--rule);
+    z-index:2;
+  }
+  .tab.active::after{
+    content:"";
+    position:absolute;
+    right:-1px; top:0; bottom:0;
+    width:1px;
+    background:var(--paper-raised);
+  }
+  .tab .closed-flag{
+    display:inline-block;
+    font-size:10px;
+    color:var(--green);
+    margin-left:6px;
+    letter-spacing:0.04em;
+  }
+  .new-case-btn{
+    margin-top:14px;
+    margin-right:18px;
+    width:calc(100% - 18px);
+    padding:9px 14px;
+    background:none;
+    border:1px dashed var(--rule);
+    border-radius:6px;
+    color:var(--slate);
+    cursor:pointer;
+    font-size:13px;
+    text-align:left;
+  }
+  .new-case-btn:hover{ border-color:var(--seal); color:var(--seal); }
+
+  /* ===== Main: case file ===== */
+  .file{
+    flex:1;
+    background:var(--paper-raised);
+    padding:34px 48px 60px;
+    max-width:820px;
+  }
+  .empty{
+    padding:80px 20px;
+    text-align:center;
+    color:var(--slate);
+  }
+  .empty h2{ font-weight:600; margin-bottom:8px; }
+
+  .file-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:14px;
+    margin-bottom:22px;
+  }
+  .file-title{
+    font-size:26px;
+    font-weight:600;
+    margin:0 0 4px 0;
+    border:none;
+    background:none;
+    color:var(--ink);
+    width:100%;
+    font-family:"Source Serif 4", Georgia, serif;
+  }
+  .file-title:focus{ outline:1px dotted var(--rule); }
+  .file-meta-row{
+    display:flex;
+    gap:18px;
+    font-size:13px;
+    color:var(--slate);
+  }
+  .file-meta-row .num{ color:var(--seal); font-weight:600; }
+  .status-pill{
+    font-size:11px;
+    padding:3px 10px;
+    border-radius:20px;
+    font-weight:600;
+    letter-spacing:0.02em;
+    white-space:nowrap;
+    cursor:pointer;
+    border:1px solid transparent;
+  }
+  .status-open{ background:#E7EEE9; color:var(--green); }
+  .status-closed{ background:#EDE7E7; color:var(--seal); }
+
+  .field-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px 24px;
+    margin-bottom:26px;
+  }
+  .field label{
+    display:block;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--slate);
+    margin-bottom:4px;
+  }
+  .field input, .field textarea, .field select{
+    width:100%;
+    border:none;
+    border-bottom:1px solid var(--rule);
+    background:transparent;
+    padding:4px 2px 6px;
+    font-size:14px;
+    color:var(--ink);
+    font-family:inherit;
+  }
+  .field textarea{ resize:vertical; min-height:44px; border:1px solid var(--rule); border-radius:4px; padding:8px; }
+  .field input:focus, .field textarea:focus, .field select:focus{ outline:none; border-color:var(--seal); }
+
+  .section-heading{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid var(--rule);
+    padding-bottom:6px;
+    margin-bottom:12px;
+  }
+  .section-heading h3{
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--slate);
+    margin:0;
+    font-weight:600;
+  }
+  .add-doc-btn{
+    background:none;
+    border:1px solid var(--rule);
+    border-radius:5px;
+    padding:5px 12px;
+    font-size:12.5px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .add-doc-btn:hover{ border-color:var(--seal); color:var(--seal); }
+
+  .doc-row{
+    display:grid;
+    grid-template-columns: 1fr 130px 130px 130px 28px;
+    gap:10px;
+    align-items:center;
+    padding:9px 0;
+    border-bottom:1px dotted var(--rule);
+  }
+  .doc-row input, .doc-row select{
+    border:none;
+    background:transparent;
+    font-size:13.5px;
+    color:var(--ink);
+    padding:3px 2px;
+    font-family:inherit;
+  }
+  .doc-row input:focus, .doc-row select:focus{ outline:none; background:#fff; border-radius:3px; }
+  .doc-row .doc-title{ font-weight:500; }
+  .doc-status{
+    font-size:11.5px;
+    font-weight:600;
+    border-radius:4px;
+    padding:3px 6px;
+  }
+  .doc-status.Draft{ color:var(--amber); }
+  .doc-status.Filed{ color:var(--slate); }
+  .doc-status.Signed{ color:var(--green); }
+  .doc-status.Executed{ color:var(--green); }
+  .doc-status.Served{ color:#3B5C8A; }
+  .doc-del{
+    background:none; border:none; color:var(--rule); cursor:pointer; font-size:16px; line-height:1;
+  }
+  .doc-del:hover{ color:var(--seal); }
+  .doc-empty{ color:var(--slate); font-size:13px; padding:14px 0; }
+
+  .notes-block{ margin-top:26px; }
+
+  .file-footer{
+    margin-top:30px;
+    padding-top:14px;
+    border-top:1px solid var(--rule);
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:var(--slate);
+  }
+  .delete-case{
+    background:none; border:none; color:var(--slate); cursor:pointer; text-decoration:underline; font-size:12px;
+  }
+  .delete-case:hover{ color:var(--seal); }
+
+  .save-flag{
+    font-size:11px;
+    color:var(--slate);
+    opacity:0;
+    transition:opacity 0.4s;
+  }
+  .save-flag.show{ opacity:1; }
+
+  @media (max-width: 720px){
+    #app{ flex-direction:column; }
+    .tabs{ width:auto; border-right:none; border-bottom:1px solid var(--rule); padding:18px; }
+    .tab{ border-radius:6px; border-right:1px solid var(--rule); margin-right:0; margin-bottom:4px; }
+    .tab.active::after{ display:none; }
+    .file{ padding:24px 20px 40px; max-width:none; }
+    .field-grid{ grid-template-columns:1fr; }
+    .doc-row{ grid-template-columns:1fr; gap:4px; padding:12px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+(function(){
+  const STORE_KEY = "cases";
+  let cases = [];
+  let activeId = null;
+  let loaded = false;
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  function nextCaseNumber(){
+    const year = new Date().getFullYear();
+    const countThisYear = cases.filter(c => c.number && c.number.startsWith(String(year))).length;
+    return `${year}-${String(countThisYear+1).padStart(3,"0")}`;
+  }
+
+  async function loadData(){
+    try{
+      const res = await window.storage.get(STORE_KEY, false);
+      cases = res && res.value ? JSON.parse(res.value) : [];
+    }catch(e){
+      cases = [];
+    }
+    loaded = true;
+    if(cases.length && !activeId) activeId = cases[0].id;
+    render();
+  }
+
+  let saveTimer=null;
+  async function saveData(flag){
+    try{
+      await window.storage.set(STORE_KEY, JSON.stringify(cases), false);
+      if(flag) flashSaved();
+    }catch(e){
+      console.error("Save failed", e);
+    }
+  }
+  function scheduleSave(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>saveData(true), 400);
+  }
+  function flashSaved(){
+    const el = document.getElementById("save-flag");
+    if(!el) return;
+    el.classList.add("show");
+    clearTimeout(flashSaved._t);
+    flashSaved._t = setTimeout(()=>el.classList.remove("show"), 1200);
+  }
+
+  function newCase(){
+    const c = {
+      id: uid(),
+      title: "Untitled Matter",
+      number: nextCaseNumber(),
+      client: "",
+      opened: new Date().toISOString().slice(0,10),
+      status: "Open",
+      notes: "",
+      docs: []
+    };
+    cases.unshift(c);
+    activeId = c.id;
+    scheduleSave();
+    render();
+    setTimeout(()=>{
+      const t = document.querySelector(".file-title");
+      if(t){ t.focus(); t.select(); }
+    },0);
+  }
+
+  function newDoc(caseObj){
+    caseObj.docs.push({ id: uid(), title:"", type:"Contract", status:"Draft", due:"" });
+    scheduleSave();
+    render();
+  }
+
+  function deleteCase(id){
+    if(!confirm("Delete this case file and its documents? This can't be undone.")) return;
+    cases = cases.filter(c=>c.id!==id);
+    if(activeId===id) activeId = cases.length ? cases[0].id : null;
+    scheduleSave();
+    render();
+  }
+
+  function deleteDoc(caseObj, docId){
+    caseObj.docs = caseObj.docs.filter(d=>d.id!==docId);
+    scheduleSave();
+    render();
+  }
+
+  function el(tag, attrs, ...children){
+    const e = document.createElement(tag);
+    for(const k in (attrs||{})){
+      if(k==="class") e.className = attrs[k];
+      else if(k.startsWith("on")) e.addEventListener(k.slice(2), attrs[k]);
+      else e.setAttribute(k, attrs[k]);
+    }
+    children.flat().forEach(c=>{
+      if(c==null) return;
+      e.appendChild(typeof c==="string" ? document.createTextNode(c) : c);
+    });
+    return e;
+  }
+
+  function renderSidebar(){
+    const wrap = el("div",{class:"tabs"});
+    wrap.appendChild(
+      el("div",{class:"brand"},
+        el("p",{class:"mark mono"},"DOCKET"),
+        el("h1",{class:"serif"},"Case Files")
+      )
+    );
+    const list = el("div",{class:"tab-list"});
+    cases.forEach(c=>{
+      const tab = el("div",{
+        class: "tab" + (c.id===activeId ? " active" : ""),
+        onclick: ()=>{ activeId=c.id; render(); }
+      },
+        el("span",{class:"cname"}, c.title || "Untitled Matter", c.status==="Closed" ? el("span",{class:"closed-flag"},"CLOSED") : null),
+        el("span",{class:"cnum mono"}, c.number)
+      );
+      list.appendChild(tab);
+    });
+    wrap.appendChild(list);
+    wrap.appendChild(el("button",{class:"new-case-btn", onclick:newCase}, "+ Open new case"));
+    return wrap;
+  }
+
+  function renderEmpty(){
+    return el("div",{class:"file"},
+      el("div",{class:"empty"},
+        el("h2",{class:"serif"},"No cases yet"),
+        el("p",{}, "Open a new file to start tracking a matter and its documents."),
+      )
+    );
+  }
+
+  function renderDocRow(caseObj, doc){
+    const row = el("div",{class:"doc-row"});
+    row.appendChild(el("input",{
+      class:"doc-title", placeholder:"Document title", value:doc.title,
+      oninput:(e)=>{ doc.title=e.target.value; scheduleSave(); }
+    }));
+    const typeSel = el("select",{
+      onchange:(e)=>{ doc.type=e.target.value; scheduleSave(); }
+    });
+    ["Contract","Pleading","Correspondence","Exhibit","Filing","Other"].forEach(t=>{
+      const o = el("option",{value:t}, t);
+      if(doc.type===t) o.setAttribute("selected","selected");
+      typeSel.appendChild(o);
+    });
+    row.appendChild(typeSel);
+
+    const statusSel = el("select",{
+      class:"doc-status " + doc.status,
+      onchange:(e)=>{ doc.status=e.target.value; scheduleSave(); render(); }
+    });
+    ["Draft","Filed","Served","Signed","Executed"].forEach(s=>{
+      const o = el("option",{value:s}, s);
+      if(doc.status===s) o.setAttribute("selected","selected");
+      statusSel.appendChild(o);
+    });
+    row.appendChild(statusSel);
+
+    row.appendChild(el("input",{
+      type:"date", value:doc.due||"",
+      onchange:(e)=>{ doc.due=e.target.value; scheduleSave(); }
+    }));
+    row.appendChild(el("button",{class:"doc-del", title:"Remove document", onclick:()=>deleteDoc(caseObj, doc.id)}, "×"));
+    return row;
+  }
+
+  function renderFile(caseObj){
+    const wrap = el("div",{class:"file"});
+
+    const header = el("div",{class:"file-header"});
+    const left = el("div",{style:"flex:1"});
+    left.appendChild(el("input",{
+      class:"file-title serif", value:caseObj.title,
+      oninput:(e)=>{ caseObj.title=e.target.value; scheduleSave(); },
+      onblur:()=>render()
+    }));
+    left.appendChild(el("div",{class:"file-meta-row"},
+      el("span",{}, el("span",{class:"num mono"}, caseObj.number)),
+      el("span",{}, "Opened " + (caseObj.opened||"—"))
+    ));
+    header.appendChild(left);
+
+    const statusPill = el("span",{
+      class:"status-pill " + (caseObj.status==="Open" ? "status-open" : "status-closed"),
+      onclick: ()=>{ caseObj.status = caseObj.status==="Open" ? "Closed" : "Open"; scheduleSave(); render(); }
+    }, caseObj.status.toUpperCase());
+    header.appendChild(statusPill);
+    wrap.appendChild(header);
+
+    const grid = el("div",{class:"field-grid"});
+    grid.appendChild(el("div",{class:"field"},
+      el("label",{},"Client"),
+      el("input",{value:caseObj.client, oninput:(e)=>{caseObj.client=e.target.value; scheduleSave();}})
+    ));
+    grid.appendChild(el("div",{class:"field"},
+      el("label",{},"Opened"),
+      el("input",{type:"date", value:caseObj.opened, onchange:(e)=>{caseObj.opened=e.target.value; scheduleSave(); render();}})
+    ));
+    wrap.appendChild(grid);
+
+    const secHead = el("div",{class:"section-heading"},
+      el("h3",{}, "Documents"),
+      el("button",{class:"add-doc-btn", onclick:()=>newDoc(caseObj)}, "+ Add document")
+    );
+    wrap.appendChild(secHead);
+
+    if(caseObj.docs.length===0){
+      wrap.appendChild(el("div",{class:"doc-empty"},"No documents filed for this matter yet."));
+    } else {
+      caseObj.docs.forEach(d=> wrap.appendChild(renderDocRow(caseObj, d)));
+    }
+
+    const notes = el("div",{class:"notes-block field"},
+      el("label",{},"Notes"),
+      el("textarea",{
+        oninput:(e)=>{ caseObj.notes=e.target.value; scheduleSave(); }
+      }, caseObj.notes)
+    );
+    wrap.appendChild(notes);
+
+    wrap.appendChild(el("div",{class:"file-footer"},
+      el("button",{class:"delete-case", onclick:()=>deleteCase(caseObj.id)}, "Delete case file"),
+      el("span",{id:"save-flag", class:"save-flag"}, "Saved")
+    ));
+
+    return wrap;
+  }
+
+  function render(){
+    const root = document.getElementById("app");
+    root.innerHTML = "";
+    root.appendChild(renderSidebar());
+    if(!loaded){
+      root.appendChild(el("div",{class:"file"}, el("div",{class:"empty"}, "Loading…")));
+      return;
+    }
+    const active = cases.find(c=>c.id===activeId);
+    if(!active){
+      root.appendChild(renderEmpty());
+    } else {
+      root.appendChild(renderFile(active));
+    }
+  }
+
+  loadData();
+})();
+</script>
+</body>
+</html>
