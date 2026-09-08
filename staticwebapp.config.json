@@ -17,17 +17,14 @@
   "routes": [
     {
       "route": "/api/*",
-      "allowedRoles": [
-        "legal"
-      ]
+      "allowedRoles": ["authenticated", "legal"]
     },
     {
       "route": "/*",
-      "allowedRoles": [
-        "legal"
-      ]
+      "allowedRoles": ["anonymous", "authenticated"]
     }
-  ],
+  ]
+},
   "responseOverrides": {
     "401": {
       "redirect": "/.auth/login/aad",
