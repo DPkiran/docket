@@ -3,284 +3,337 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Docket — Case & Document Tracker :</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Docket — Case & Document Tracker</title>
 <style>
   :root{
-    --ink:#1B2A41;
-    --paper:#EEECE4;
-    --paper-raised:#F7F5EF;
-    --rule:#C9C2AE;
-    --seal:#7A2E2E;
-    --seal-dim:#a85454;
-    --slate:#5B6470;
-    --green:#3F6B4F;
-    --amber:#8A6A1F;
-    --shadow: 0 1px 0 rgba(27,42,65,0.08);
+    --brand:#0078D4;
+    --brand-hover:#106EBE;
+    --brand-pressed:#005A9E;
+    --brand-tint:#EFF6FC;
+    --text-primary:#201F1E;
+    --text-secondary:#605E5C;
+    --text-tertiary:#8A8886;
+    --bg-page:#FAF9F8;
+    --bg-surface:#FFFFFF;
+    --border:#EDEBE9;
+    --divider:#E1DFDD;
+    --success:#107C10;
+    --success-tint:#DFF6DD;
+    --warning:#986F0B;
+    --warning-tint:#FFF4CE;
+    --info:#004E8C;
+    --info-tint:#DEECF9;
+    --danger:#A4262C;
+    --danger-tint:#FDE7E9;
+    --radius:4px;
+    --shadow-2: 0 1.6px 3.6px rgba(0,0,0,0.13), 0 0.3px 0.9px rgba(0,0,0,0.11);
+    --shadow-4: 0 3.2px 7.2px rgba(0,0,0,0.13), 0 0.6px 1.8px rgba(0,0,0,0.11);
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;}
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; height:100%; }
   body{
-    background:var(--paper);
-    color:var(--ink);
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    font-size:15px;
+    background:var(--bg-page);
+    color:var(--text-primary);
+    font-family:"Segoe UI","Segoe UI Web (West European)",-apple-system,BlinkMacSystemFont,"Roboto","Helvetica Neue",Arial,sans-serif;
+    font-size:14px;
     line-height:1.5;
   }
-  .serif{ font-family:"Source Serif 4", Georgia, serif; }
-  .mono{ font-family:"IBM Plex Mono", monospace; }
+
+  /* ===== Top app bar ===== */
+  .app-bar{
+    height:48px;
+    background:var(--bg-surface);
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    padding:0 16px;
+    gap:10px;
+  }
+  .app-bar .app-icon{
+    width:24px; height:24px;
+    background:var(--brand);
+    border-radius:4px;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:13px; font-weight:600;
+    flex-shrink:0;
+  }
+  .app-bar .app-name{
+    font-size:15px;
+    font-weight:600;
+    color:var(--text-primary);
+  }
+  .app-bar .app-sub{
+    font-size:12px;
+    color:var(--text-tertiary);
+    border-left:1px solid var(--divider);
+    padding-left:10px;
+    margin-left:2px;
+  }
 
   #app{
     display:flex;
-    min-height:100vh;
+    min-height:calc(100vh - 48px);
   }
 
-  /* ===== Sidebar: folder tabs ===== */
+  /* ===== Left nav pane ===== */
   .tabs{
-    width:240px;
+    width:280px;
     flex-shrink:0;
-    padding:28px 0 28px 18px;
-    border-right:1px solid var(--rule);
+    background:var(--bg-surface);
+    border-right:1px solid var(--border);
+    padding:16px 0;
+    overflow-y:auto;
   }
-  .brand{
-    padding:0 18px 22px 6px;
-  }
-  .brand .mark{
+  .tabs-heading{
     font-size:12px;
-    letter-spacing:0.12em;
-    color:var(--seal);
-    margin:0 0 2px 0;
-  }
-  .brand h1{
-    margin:0;
-    font-size:22px;
     font-weight:600;
+    color:var(--text-tertiary);
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    padding:0 20px 10px;
   }
-  .tab-list{
-    display:flex;
-    flex-direction:column;
-    gap:2px;
-  }
+  .tab-list{ display:flex; flex-direction:column; }
   .tab{
     position:relative;
-    padding:10px 14px 10px 18px;
-    border:1px solid var(--rule);
-    border-right:none;
-    border-radius:6px 0 0 6px;
-    background:var(--paper);
+    padding:10px 20px 10px 20px;
     cursor:pointer;
-    margin-right:-1px;
+    border-left:3px solid transparent;
   }
+  .tab:hover{ background:#F3F2F1; }
   .tab .cname{
     display:block;
     font-weight:600;
-    font-size:14px;
+    font-size:13.5px;
+    color:var(--text-primary);
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
   }
   .tab .cnum{
     display:block;
-    font-size:11px;
-    color:var(--slate);
+    font-size:12px;
+    color:var(--text-secondary);
     margin-top:2px;
   }
   .tab.active{
-    background:var(--paper-raised);
-    border-color:var(--rule);
-    z-index:2;
+    background:var(--brand-tint);
+    border-left-color:var(--brand);
   }
-  .tab.active::after{
-    content:"";
-    position:absolute;
-    right:-1px; top:0; bottom:0;
-    width:1px;
-    background:var(--paper-raised);
-  }
+  .tab.active .cname{ color:var(--brand-pressed); }
   .tab .closed-flag{
     display:inline-block;
     font-size:10px;
-    color:var(--green);
-    margin-left:6px;
-    letter-spacing:0.04em;
+    font-weight:600;
+    color:var(--success);
+    background:var(--success-tint);
+    border-radius:3px;
+    padding:1px 6px;
+    margin-left:8px;
+    letter-spacing:0.02em;
   }
   .new-case-btn{
-    margin-top:14px;
-    margin-right:18px;
-    width:calc(100% - 18px);
-    padding:9px 14px;
-    background:none;
-    border:1px dashed var(--rule);
-    border-radius:6px;
-    color:var(--slate);
+    margin:12px 20px 0;
+    width:calc(100% - 40px);
+    padding:8px 14px;
+    background:var(--bg-surface);
+    border:1px solid var(--brand);
+    border-radius:var(--radius);
+    color:var(--brand);
     cursor:pointer;
-    font-size:13px;
+    font-size:13.5px;
+    font-weight:600;
     text-align:left;
   }
-  .new-case-btn:hover{ border-color:var(--seal); color:var(--seal); }
+  .new-case-btn:hover{ background:var(--brand-tint); }
+  .new-case-btn:active{ background:var(--brand); color:#fff; }
 
   /* ===== Main: case file ===== */
   .file{
     flex:1;
-    background:var(--paper-raised);
-    padding:34px 48px 60px;
-    max-width:820px;
+    padding:28px 40px 60px;
+    max-width:900px;
   }
   .empty{
-    padding:80px 20px;
+    padding:100px 20px;
     text-align:center;
-    color:var(--slate);
+    color:var(--text-secondary);
   }
-  .empty h2{ font-weight:600; margin-bottom:8px; }
+  .empty h2{ font-weight:600; margin-bottom:6px; color:var(--text-primary); font-size:20px; }
+
+  .file-card{
+    background:var(--bg-surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-2);
+    padding:24px 28px;
+  }
 
   .file-header{
     display:flex;
     justify-content:space-between;
     align-items:flex-start;
-    border-bottom:2px solid var(--ink);
-    padding-bottom:14px;
-    margin-bottom:22px;
+    border-bottom:1px solid var(--divider);
+    padding-bottom:16px;
+    margin-bottom:20px;
   }
   .file-title{
-    font-size:26px;
+    font-size:22px;
     font-weight:600;
-    margin:0 0 4px 0;
+    margin:0 0 6px 0;
     border:none;
     background:none;
-    color:var(--ink);
+    color:var(--text-primary);
     width:100%;
-    font-family:"Source Serif 4", Georgia, serif;
+    font-family:inherit;
+    padding:2px 0;
+    border-radius:2px;
   }
-  .file-title:focus{ outline:1px dotted var(--rule); }
+  .file-title:focus{ outline:2px solid var(--brand); outline-offset:2px; }
   .file-meta-row{
     display:flex;
-    gap:18px;
-    font-size:13px;
-    color:var(--slate);
+    gap:16px;
+    font-size:12.5px;
+    color:var(--text-secondary);
   }
-  .file-meta-row .num{ color:var(--seal); font-weight:600; }
+  .file-meta-row .num{
+    color:var(--brand-pressed);
+    font-weight:600;
+    background:var(--brand-tint);
+    padding:1px 8px;
+    border-radius:3px;
+  }
   .status-pill{
-    font-size:11px;
-    padding:3px 10px;
-    border-radius:20px;
+    font-size:11.5px;
+    padding:4px 12px;
+    border-radius:3px;
     font-weight:600;
     letter-spacing:0.02em;
     white-space:nowrap;
     cursor:pointer;
     border:1px solid transparent;
   }
-  .status-open{ background:#E7EEE9; color:var(--green); }
-  .status-closed{ background:#EDE7E7; color:var(--seal); }
+  .status-open{ background:var(--success-tint); color:var(--success); }
+  .status-closed{ background:var(--danger-tint); color:var(--danger); }
 
   .field-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:14px 24px;
-    margin-bottom:26px;
+    gap:16px 28px;
+    margin-bottom:24px;
   }
   .field label{
     display:block;
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-    color:var(--slate);
-    margin-bottom:4px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--text-secondary);
+    margin-bottom:5px;
   }
   .field input, .field textarea, .field select{
     width:100%;
-    border:none;
-    border-bottom:1px solid var(--rule);
-    background:transparent;
-    padding:4px 2px 6px;
+    border:1px solid var(--text-tertiary);
+    border-radius:var(--radius);
+    background:var(--bg-surface);
+    padding:6px 10px;
     font-size:14px;
-    color:var(--ink);
+    color:var(--text-primary);
     font-family:inherit;
   }
-  .field textarea{ resize:vertical; min-height:44px; border:1px solid var(--rule); border-radius:4px; padding:8px; }
-  .field input:focus, .field textarea:focus, .field select:focus{ outline:none; border-color:var(--seal); }
+  .field textarea{ resize:vertical; min-height:56px; }
+  .field input:focus, .field textarea:focus, .field select:focus{
+    outline:none; border-color:var(--brand); box-shadow:0 0 0 1px var(--brand);
+  }
 
   .section-heading{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    border-bottom:1px solid var(--rule);
-    padding-bottom:6px;
+    padding-bottom:8px;
     margin-bottom:12px;
+    border-bottom:1px solid var(--divider);
   }
   .section-heading h3{
-    font-size:14px;
+    font-size:13px;
     text-transform:uppercase;
-    letter-spacing:0.08em;
-    color:var(--slate);
+    letter-spacing:0.04em;
+    color:var(--text-secondary);
     margin:0;
     font-weight:600;
   }
   .add-doc-btn{
-    background:none;
-    border:1px solid var(--rule);
-    border-radius:5px;
-    padding:5px 12px;
-    font-size:12.5px;
-    color:var(--ink);
+    background:var(--brand);
+    border:1px solid var(--brand);
+    border-radius:var(--radius);
+    padding:6px 14px;
+    font-size:13px;
+    font-weight:600;
+    color:#fff;
     cursor:pointer;
   }
-  .add-doc-btn:hover{ border-color:var(--seal); color:var(--seal); }
+  .add-doc-btn:hover{ background:var(--brand-hover); border-color:var(--brand-hover); }
+  .add-doc-btn:active{ background:var(--brand-pressed); border-color:var(--brand-pressed); }
 
   .doc-row{
     display:grid;
-    grid-template-columns: 1fr 130px 130px 130px 28px;
+    grid-template-columns: 1fr 140px 130px 140px 32px;
     gap:10px;
     align-items:center;
-    padding:9px 0;
-    border-bottom:1px dotted var(--rule);
+    padding:8px 6px;
+    border-radius:var(--radius);
+    border-bottom:1px solid var(--border);
   }
+  .doc-row:hover{ background:#FAF9F8; }
   .doc-row input, .doc-row select{
-    border:none;
+    border:1px solid transparent;
     background:transparent;
     font-size:13.5px;
-    color:var(--ink);
-    padding:3px 2px;
+    color:var(--text-primary);
+    padding:4px 6px;
+    border-radius:3px;
     font-family:inherit;
   }
-  .doc-row input:focus, .doc-row select:focus{ outline:none; background:#fff; border-radius:3px; }
+  .doc-row input:focus, .doc-row select:focus{
+    outline:none; background:#fff; border-color:var(--brand);
+  }
   .doc-row .doc-title{ font-weight:500; }
   .doc-status{
     font-size:11.5px;
     font-weight:600;
-    border-radius:4px;
-    padding:3px 6px;
+    border-radius:3px;
+    padding:4px 6px;
   }
-  .doc-status.Draft{ color:var(--amber); }
-  .doc-status.Filed{ color:var(--slate); }
-  .doc-status.Signed{ color:var(--green); }
-  .doc-status.Executed{ color:var(--green); }
-  .doc-status.Served{ color:#3B5C8A; }
+  .doc-status.Draft{ color:var(--warning); background:var(--warning-tint); }
+  .doc-status.Filed{ color:var(--text-secondary); background:#F3F2F1; }
+  .doc-status.Signed{ color:var(--success); background:var(--success-tint); }
+  .doc-status.Executed{ color:var(--success); background:var(--success-tint); }
+  .doc-status.Served{ color:var(--info); background:var(--info-tint); }
   .doc-del{
-    background:none; border:none; color:var(--rule); cursor:pointer; font-size:16px; line-height:1;
+    background:none; border:none; color:var(--text-tertiary); cursor:pointer; font-size:16px; line-height:1;
+    border-radius:3px; padding:4px;
   }
-  .doc-del:hover{ color:var(--seal); }
-  .doc-empty{ color:var(--slate); font-size:13px; padding:14px 0; }
+  .doc-del:hover{ color:var(--danger); background:var(--danger-tint); }
+  .doc-empty{ color:var(--text-secondary); font-size:13px; padding:16px 4px; }
 
-  .notes-block{ margin-top:26px; }
+  .notes-block{ margin-top:24px; }
 
   .file-footer{
-    margin-top:30px;
+    margin-top:28px;
     padding-top:14px;
-    border-top:1px solid var(--rule);
+    border-top:1px solid var(--divider);
     display:flex;
     justify-content:space-between;
+    align-items:center;
     font-size:12px;
-    color:var(--slate);
+    color:var(--text-secondary);
   }
   .delete-case{
-    background:none; border:none; color:var(--slate); cursor:pointer; text-decoration:underline; font-size:12px;
+    background:none; border:none; color:var(--danger); cursor:pointer; font-size:12.5px; font-weight:600; padding:0;
   }
-  .delete-case:hover{ color:var(--seal); }
+  .delete-case:hover{ text-decoration:underline; }
 
   .save-flag{
-    font-size:11px;
-    color:var(--slate);
+    font-size:12px;
+    color:var(--success);
+    font-weight:600;
     opacity:0;
     transition:opacity 0.4s;
   }
@@ -288,17 +341,22 @@
 
   @media (max-width: 720px){
     #app{ flex-direction:column; }
-    .tabs{ width:auto; border-right:none; border-bottom:1px solid var(--rule); padding:18px; }
-    .tab{ border-radius:6px; border-right:1px solid var(--rule); margin-right:0; margin-bottom:4px; }
-    .tab.active::after{ display:none; }
-    .file{ padding:24px 20px 40px; max-width:none; }
+    .tabs{ width:auto; border-right:none; border-bottom:1px solid var(--border); }
+    .tab{ border-left:none; border-bottom:3px solid transparent; }
+    .tab.active{ border-left:none; border-bottom-color:var(--brand); }
+    .file{ padding:20px 16px 40px; max-width:none; }
     .field-grid{ grid-template-columns:1fr; }
-    .doc-row{ grid-template-columns:1fr; gap:4px; padding:12px 0; }
+    .doc-row{ grid-template-columns:1fr; gap:4px; padding:12px 6px; }
   }
 </style>
 </head>
 <body>
 
+<div class="app-bar">
+  <div class="app-icon">D</div>
+  <div class="app-name">Docket</div>
+  <div class="app-sub">Case &amp; Document Tracker</div>
+</div>
 <div id="app"></div>
 
 <script>
@@ -406,12 +464,7 @@
 
   function renderSidebar(){
     const wrap = el("div",{class:"tabs"});
-    wrap.appendChild(
-      el("div",{class:"brand"},
-        el("p",{class:"mark mono"},"DOCKET"),
-        el("h1",{class:"serif"},"Case Files")
-      )
-    );
+    wrap.appendChild(el("div",{class:"tabs-heading"},"Case Files"));
     const list = el("div",{class:"tab-list"});
     cases.forEach(c=>{
       const tab = el("div",{
@@ -419,7 +472,7 @@
         onclick: ()=>{ activeId=c.id; render(); }
       },
         el("span",{class:"cname"}, c.title || "Untitled Matter", c.status==="Closed" ? el("span",{class:"closed-flag"},"CLOSED") : null),
-        el("span",{class:"cnum mono"}, c.number)
+        el("span",{class:"cnum"}, c.number)
       );
       list.appendChild(tab);
     });
@@ -431,7 +484,7 @@
   function renderEmpty(){
     return el("div",{class:"file"},
       el("div",{class:"empty"},
-        el("h2",{class:"serif"},"No cases yet"),
+        el("h2",{},"No cases yet"),
         el("p",{}, "Open a new file to start tracking a matter and its documents."),
       )
     );
@@ -474,16 +527,17 @@
 
   function renderFile(caseObj){
     const wrap = el("div",{class:"file"});
+    const card = el("div",{class:"file-card"});
 
     const header = el("div",{class:"file-header"});
     const left = el("div",{style:"flex:1"});
     left.appendChild(el("input",{
-      class:"file-title serif", value:caseObj.title,
+      class:"file-title", value:caseObj.title,
       oninput:(e)=>{ caseObj.title=e.target.value; scheduleSave(); },
       onblur:()=>render()
     }));
     left.appendChild(el("div",{class:"file-meta-row"},
-      el("span",{}, el("span",{class:"num mono"}, caseObj.number)),
+      el("span",{}, el("span",{class:"num"}, caseObj.number)),
       el("span",{}, "Opened " + (caseObj.opened||"—"))
     ));
     header.appendChild(left);
@@ -493,7 +547,7 @@
       onclick: ()=>{ caseObj.status = caseObj.status==="Open" ? "Closed" : "Open"; scheduleSave(); render(); }
     }, caseObj.status.toUpperCase());
     header.appendChild(statusPill);
-    wrap.appendChild(header);
+    card.appendChild(header);
 
     const grid = el("div",{class:"field-grid"});
     grid.appendChild(el("div",{class:"field"},
@@ -504,18 +558,18 @@
       el("label",{},"Opened"),
       el("input",{type:"date", value:caseObj.opened, onchange:(e)=>{caseObj.opened=e.target.value; scheduleSave(); render();}})
     ));
-    wrap.appendChild(grid);
+    card.appendChild(grid);
 
     const secHead = el("div",{class:"section-heading"},
       el("h3",{}, "Documents"),
       el("button",{class:"add-doc-btn", onclick:()=>newDoc(caseObj)}, "+ Add document")
     );
-    wrap.appendChild(secHead);
+    card.appendChild(secHead);
 
     if(caseObj.docs.length===0){
-      wrap.appendChild(el("div",{class:"doc-empty"},"No documents filed for this matter yet."));
+      card.appendChild(el("div",{class:"doc-empty"},"No documents filed for this matter yet."));
     } else {
-      caseObj.docs.forEach(d=> wrap.appendChild(renderDocRow(caseObj, d)));
+      caseObj.docs.forEach(d=> card.appendChild(renderDocRow(caseObj, d)));
     }
 
     const notes = el("div",{class:"notes-block field"},
@@ -524,13 +578,14 @@
         oninput:(e)=>{ caseObj.notes=e.target.value; scheduleSave(); }
       }, caseObj.notes)
     );
-    wrap.appendChild(notes);
+    card.appendChild(notes);
 
-    wrap.appendChild(el("div",{class:"file-footer"},
+    card.appendChild(el("div",{class:"file-footer"},
       el("button",{class:"delete-case", onclick:()=>deleteCase(caseObj.id)}, "Delete case file"),
       el("span",{id:"save-flag", class:"save-flag"}, "Saved")
     ));
 
+    wrap.appendChild(card);
     return wrap;
   }
 
