@@ -407,6 +407,23 @@
     flashSaved._t = setTimeout(()=>el.classList.remove("show"), 1200);
   }
 
+       // Static Web Apps exposes signed-in user info at /.auth/me
+    fetch('/.auth/me')
+      .then(r => r.json())
+      .then(data => {
+        const info = document.getElementById('user-info');
+        const principal = data.clientPrincipal;
+        if (principal) {
+          info.textContent = 'Signed in as ' + principal.userDetails;
+        } else {
+          info.textContent = 'Not signed in';
+        }
+      })
+      .catch(() => {
+        document.getElementById('user-info').textContent =
+          'Auth info unavailable (expected when testing locally without SWA CLI emulator)';
+      });
+
   function newCase(){
     const c = {
       id: uid(),
