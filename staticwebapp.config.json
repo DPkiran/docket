@@ -11,10 +11,21 @@
     },
     "rolesSource": "/api/GetRoles"
   },
+  "globalHeaders": {
+    "Content-Security-Policy": "frame-ancestors 'self' https://teams.microsoft.com https://*.teams.microsoft.com https://*.office.com;"
+  },
   "routes": [
     {
+      "route": "/api/*",
+      "allowedRoles": [
+        "legal"
+      ]
+    },
+    {
       "route": "/*",
-      "allowedRoles": ["legal"]
+      "allowedRoles": [
+        "legal"
+      ]
     }
   ],
   "responseOverrides": {
