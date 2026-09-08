@@ -23,8 +23,7 @@
       "route": "/*",
       "allowedRoles": ["anonymous", "authenticated"]
     }
-  ]
-},
+  ],
   "responseOverrides": {
     "401": {
       "redirect": "/.auth/login/aad",
